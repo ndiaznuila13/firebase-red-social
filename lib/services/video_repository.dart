@@ -1,20 +1,13 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
-import 'package:image_picker/image_picker.dart';
 import '../models/video_post.dart';
 
 class VideoRepository {
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
 
   VideoRepository({
     FirebaseFirestore? firestore,
-    FirebaseStorage? storage,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance;
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference get _videosRef => _firestore.collection('videos');
 
@@ -42,43 +35,12 @@ class VideoRepository {
   }
 
   Future<void> publicarVideo({
-    required XFile videoFile,
+    required String videoUrl,
     required String caption,
     required User usuario,
-    void Function(double progreso)? onProgreso,
   }) async {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final storagePath = 'videos/${usuario.uid}_$timestamp.mp4';
-    final storageRef = _storage.ref().child(storagePath);
-
-    final metadata = SettableMetadata(
-      contentType: 'video/mp4',
-      customMetadata: {'uploadedBy': usuario.uid},
-    );
-
-    UploadTask uploadTask;
-    if (kIsWeb) {
-      final bytes = await videoFile.readAsBytes();
-      uploadTask = storageRef.putData(bytes, metadata);
-    } else {
-      uploadTask = storageRef.putFile(File(videoFile.path), metadata);
-    }
-
-    if (onProgreso != null) {
-      uploadTask.snapshotEvents.listen((event) {
-        if (event.totalBytes > 0) {
-          final progreso = event.bytesTransferred / event.totalBytes;
-          onProgreso(progreso);
-        }
-      });
-    }
-
-    final snapshot = await uploadTask;
-    final downloadUrl = await snapshot.ref.getDownloadURL();
-
     await _videosRef.add({
-      'videoUrl': downloadUrl,
-      'storagePath': storagePath,
+      'videoUrl': videoUrl.trim(),
       'caption': caption.trim(),
       'authorUid': usuario.uid,
       'authorEmail': usuario.email ?? 'usuario',
@@ -104,15 +66,7 @@ class VideoRepository {
     }
   }
 
-  Future<void> eliminarVideo({
-    required String videoId,
-    String? storagePath,
-  }) async {
+  Future<void> eliminarVideo({required String videoId}) async {
     await _videosRef.doc(videoId).delete();
-    if (storagePath != null && storagePath.isNotEmpty) {
-      try {
-        await _storage.ref().child(storagePath).delete();
-      } catch (_) {}
-    }
   }
 }
