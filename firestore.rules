@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /videos/{videoId} {
+      // Cualquier usuario autenticado puede leer el feed de videos
+      allow read: if request.auth != null;
+
+      // Solo el autor puede publicar su propio video
+      allow create: if request.auth != null
+        && request.resource.data.authorUid == request.auth.uid;
+
+      // Permitir actualizar para dar o quitar 'me gusta'
+      allow update: if request.auth != null;
+
+      // Solo el autor puede eliminar su propio video
+      allow delete: if request.auth != null
+        && resource.data.authorUid == request.auth.uid;
+    }
+  }
+}
