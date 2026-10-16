@@ -12,31 +12,20 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const TikTokApp());
+  runApp(const MyApp());
 }
 
-class TikTokApp extends StatelessWidget {
-  const TikTokApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TikTok Social App',
+      title: 'Red Social · Firebase',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark,
-      darkTheme: ThemeData(
+      theme: ThemeData(
+        colorSchemeSeed: Colors.deepOrange,
         useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.black,
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFFF2B54),
-          secondary: Color(0xFF20D5EC),
-          surface: Colors.black,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
-          elevation: 0,
-        ),
       ),
       home: const AuthGate(),
     );
@@ -55,11 +44,8 @@ class AuthGate extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            backgroundColor: Colors.black,
             body: Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF20D5EC),
-              ),
+              child: CircularProgressIndicator(),
             ),
           );
         }

@@ -5,13 +5,8 @@ import '../services/video_repository.dart';
 
 class UploadScreen extends StatefulWidget {
   final User usuario;
-  final VoidCallback onVideoSubido;
 
-  const UploadScreen({
-    super.key,
-    required this.usuario,
-    required this.onVideoSubido,
-  });
+  const UploadScreen({super.key, required this.usuario});
 
   @override
   State<UploadScreen> createState() => _UploadScreenState();
@@ -31,25 +26,25 @@ class _UploadScreenState extends State<UploadScreen> {
       'titulo': 'Naturaleza',
       'url':
           'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-      'caption': 'Explorando nuevos lugares 🌿✨ #naturaleza #viajes',
+      'caption': 'Explorando nuevos lugares 🌿✨',
     },
     {
       'titulo': 'Deportes',
       'url':
           'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      'caption': 'Superando límites 🔥⚡ #fitness #motivacion',
+      'caption': 'Superando límites 🔥⚡',
     },
     {
       'titulo': 'Aventura',
       'url':
           'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-      'caption': 'Viviendo el momento 🚀 #aventura #lifestyle',
+      'caption': 'Viviendo el momento 🚀',
     },
     {
-      'titulo': 'Música / Fiesta',
+      'titulo': 'Música',
       'url':
           'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
-      'caption': 'Buena vibra hoy 🎵🎉 #musica #fiesta',
+      'caption': 'Buena música y buena vibra 🎵',
     },
   ];
 
@@ -80,17 +75,14 @@ class _UploadScreenState extends State<UploadScreen> {
           _isLoadingPreview = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
           _previewController = null;
           _isLoadingPreview = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se pudo reproducir la URL del video.'),
-            backgroundColor: Color(0xFFFF2B54),
-          ),
+          const SnackBar(content: Text('No se pudo reproducir la URL del video.')),
         );
       }
     }
@@ -106,7 +98,7 @@ class _UploadScreenState extends State<UploadScreen> {
     final url = _urlController.text.trim();
     if (url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor ingresa o selecciona un video')),
+        const SnackBar(content: Text('Ingresa la URL de un video')),
       );
       return;
     }
@@ -122,17 +114,9 @@ class _UploadScreenState extends State<UploadScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('¡Video publicado en tu feed!'),
-            backgroundColor: Color(0xFF20D5EC),
-          ),
+          const SnackBar(content: Text('Video publicado con éxito en Firestore')),
         );
-        _urlController.clear();
-        _captionController.clear();
-        _previewController?.dispose();
-        _previewController = null;
-        setState(() => _isPublishing = false);
-        widget.onVideoSubido();
+        Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
@@ -146,38 +130,25 @@ class _UploadScreenState extends State<UploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
-          'Nuevo video',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Publicar video'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Vista previa del video
-            Container(
-              height: 240,
-              decoration: BoxDecoration(
-                color: const Color(0xFF141414),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+            // Vista previa
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: Container(
+                height: 220,
+                color: Colors.black12,
                 child: _isLoadingPreview
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF20D5EC),
-                        ),
-                      )
+                    ? const Center(child: CircularProgressIndicator())
                     : _previewController != null &&
                             _previewController!.value.isInitialized
                         ? AspectRatio(
@@ -188,162 +159,72 @@ class _UploadScreenState extends State<UploadScreen> {
                         : const Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.play_circle_outline_rounded,
-                                size: 54,
-                                color: Colors.white38,
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Selecciona o pega un video para previsualizar',
-                                style: TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 13,
-                                ),
-                              ),
+                              Icon(Icons.video_library_outlined, size: 48),
+                              SizedBox(height: 8),
+                              Text('Vista previa del video'),
                             ],
                           ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Plantillas rápidas de prueba
-            const Text(
+            // Chips rápidos
+            Text(
               'Videos de muestra rápidos:',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+              style: theme.textTheme.labelMedium,
             ),
-            const SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: _videosEjemplo.map((preset) {
-                  final isSelected = _urlController.text == preset['url'];
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ActionChip(
-                      backgroundColor: isSelected
-                          ? const Color(0xFFFF2B54)
-                          : const Color(0xFF1F1F1F),
-                      label: Text(
-                        preset['titulo']!,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.white70,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      ),
-                      onPressed: () => _seleccionarPreset(preset),
-                    ),
-                  );
-                }).toList(),
-              ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: _videosEjemplo.map((preset) {
+                final isSelected = _urlController.text == preset['url'];
+                return ChoiceChip(
+                  label: Text(preset['titulo']!),
+                  selected: isSelected,
+                  onSelected: (_) => _seleccionarPreset(preset),
+                );
+              }).toList(),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // Campo de URL personalizada
+            // URL del video
             TextField(
               controller: _urlController,
-              enabled: !_isPublishing,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
-                labelText: 'Enlace del video (MP4)',
-                labelStyle: const TextStyle(color: Colors.white60),
-                hintText: 'https://ejemplo.com/video.mp4',
-                hintStyle: const TextStyle(color: Colors.white24),
+                labelText: 'URL del video (MP4)',
+                border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.refresh_rounded,
-                      color: Color(0xFF20D5EC)),
-                  tooltip: 'Cargar previsualización',
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Previsualizar',
                   onPressed: () => _cargarVistaPrevia(_urlController.text),
-                ),
-                filled: true,
-                fillColor: const Color(0xFF141414),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF20D5EC)),
                 ),
               ),
               onSubmitted: _cargarVistaPrevia,
             ),
             const SizedBox(height: 16),
 
-            // Campo de descripción
+            // Descripción
             TextField(
               controller: _captionController,
-              enabled: !_isPublishing,
               maxLines: 2,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Descripción / Hashtags',
-                labelStyle: const TextStyle(color: Colors.white60),
-                hintText: 'Escribe algo sobre este video...',
-                hintStyle: const TextStyle(color: Colors.white24),
-                filled: true,
-                fillColor: const Color(0xFF141414),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF20D5EC)),
-                ),
+              decoration: const InputDecoration(
+                labelText: 'Descripción de la publicación',
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
 
-            // Botón de publicar
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF2B54),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+            // Botón publicar
+            FilledButton.icon(
               onPressed: _isPublishing ? null : _publicar,
-              child: _isPublishing
+              icon: _isPublishing
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text(
-                      'Publicar en Firestore',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  : const Icon(Icons.cloud_upload_outlined),
+              label: const Text('Publicar en Firestore'),
             ),
           ],
         ),

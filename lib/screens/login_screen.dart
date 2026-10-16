@@ -43,10 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } on AuthFailure catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.mensaje),
-          backgroundColor: const Color(0xFFFF2B54),
-        ),
+        SnackBar(content: Text(e.mensaje)),
       );
     } finally {
       if (mounted) setState(() => _enviando = false);
@@ -56,77 +53,32 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text(_modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'),
+      ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+          padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF20D5EC), Color(0xFFFF2B54)],
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.play_arrow_rounded,
-                        size: 38,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'TikTok Feed',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
+                const Icon(Icons.local_fire_department, size: 56),
+                const SizedBox(height: 8),
                 Text(
-                  _modoRegistro
-                      ? 'Crea tu cuenta para compartir tus videos'
-                      : 'Inicia sesión para ver y publicar contenido',
+                  'Red Social · Firebase',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white54, fontSize: 14),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 24),
                 TextFormField(
                   controller: _correoController,
                   keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Correo electrónico',
-                    labelStyle: const TextStyle(color: Colors.white60),
-                    prefixIcon: const Icon(Icons.email_outlined,
-                        color: Colors.white54, size: 20),
-                    filled: true,
-                    fillColor: const Color(0xFF141414),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF20D5EC)),
-                    ),
+                    border: OutlineInputBorder(),
                   ),
                   validator: (valor) {
                     if (valor == null || !valor.contains('@')) {
@@ -139,26 +91,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _contrasenaController,
                   obscureText: true,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Contraseña',
-                    labelStyle: const TextStyle(color: Colors.white60),
-                    prefixIcon: const Icon(Icons.lock_outline_rounded,
-                        color: Colors.white54, size: 20),
-                    filled: true,
-                    fillColor: const Color(0xFF141414),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF20D5EC)),
-                    ),
+                    border: OutlineInputBorder(),
                   ),
                   validator: (valor) {
                     if (valor == null || valor.length < 6) {
@@ -167,47 +102,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 28),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF2B54),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                const SizedBox(height: 24),
+                FilledButton(
                   onPressed: _enviando ? null : _enviar,
                   child: _enviando
                       ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Text(
-                          _modoRegistro ? 'Registrarme' : 'Iniciar sesión',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      : Text(_modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 TextButton(
                   onPressed: _enviando
                       ? null
                       : () => setState(() => _modoRegistro = !_modoRegistro),
                   child: Text(
                     _modoRegistro
-                        ? '¿Ya tienes una cuenta? Inicia sesión'
-                        : '¿No tienes cuenta aún? Regístrate aquí',
-                    style: const TextStyle(
-                      color: Color(0xFF20D5EC),
-                      fontSize: 14,
-                    ),
+                        ? '¿Ya tienes cuenta? Inicia sesión'
+                        : '¿No tienes cuenta? Regístrate',
                   ),
                 ),
               ],
