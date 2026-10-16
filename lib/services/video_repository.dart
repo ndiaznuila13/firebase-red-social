@@ -34,19 +34,68 @@ class VideoRepository {
     });
   }
 
-  Future<void> publicarVideo({
-    required String videoUrl,
+  Future<void> publicarPost({
+    required String mediaUrl,
+    required String mediaType,
     required String caption,
     required User usuario,
+    String? filter,
+    double? filterX,
+    double? filterY,
+    double? filterScale,
   }) async {
     await _videosRef.add({
-      'videoUrl': videoUrl.trim(),
+      'videoUrl': mediaUrl.trim(),
+      'mediaUrl': mediaUrl.trim(),
+      'mediaType': mediaType,
       'caption': caption.trim(),
       'authorUid': usuario.uid,
       'authorEmail': usuario.email ?? 'usuario',
       'likes': <String>[],
+      'filter': filter,
+      'filterX': filterX,
+      'filterY': filterY,
+      'filterScale': filterScale,
       'createdAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  Future<void> publicarVideo({
+    required String videoUrl,
+    required String caption,
+    required User usuario,
+    String? filter,
+    double? filterX,
+    double? filterY,
+    double? filterScale,
+  }) async {
+    await publicarPost(
+      mediaUrl: videoUrl,
+      mediaType: 'video',
+      caption: caption,
+      usuario: usuario,
+      filter: filter,
+      filterX: filterX,
+      filterY: filterY,
+      filterScale: filterScale,
+    );
+  }
+
+  Future<void> actualizarFiltro({
+    required String videoId,
+    required String? filter,
+    double? filterX,
+    double? filterY,
+    double? filterScale,
+  }) async {
+    final updateData = <String, dynamic>{
+      'filter': filter,
+    };
+    if (filterX != null) updateData['filterX'] = filterX;
+    if (filterY != null) updateData['filterY'] = filterY;
+    if (filterScale != null) updateData['filterScale'] = filterScale;
+
+    await _videosRef.doc(videoId).update(updateData);
   }
 
   Future<void> alternarLike({

@@ -78,18 +78,18 @@ class FeedScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.video_library_outlined,
+                    Icons.dynamic_feed_outlined,
                     size: 64,
                     color: Theme.of(context).colorScheme.outline,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No hay videos publicados',
+                    'No hay publicaciones en el feed',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Presiona el botón inferior para publicar el primer video.',
+                    'Presiona el botón inferior para crear la primera publicación.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),

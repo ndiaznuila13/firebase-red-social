@@ -26,8 +26,8 @@ class HomeScreen extends StatelessWidget {
       ),
       body: FeedScreen(usuario: usuario),
       floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: const Text('Publicar video'),
+        icon: const Icon(Icons.add_photo_alternate_outlined),
+        label: const Text('Crear publicación'),
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
