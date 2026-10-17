@@ -62,8 +62,9 @@ class _MediaFilterOverlayState extends State<MediaFilterOverlay> {
       return const SizedBox.shrink();
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
+    return Positioned.fill(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
 
@@ -182,78 +183,77 @@ class _MediaFilterOverlayState extends State<MediaFilterOverlay> {
         );
 
         if (!widget.interactive) {
-          return Positioned(
-            left: left,
-            top: top,
-            child: IgnorePointer(child: scaledContent),
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: left,
+                top: top,
+                child: IgnorePointer(child: scaledContent),
+              ),
+            ],
           );
         }
 
-        // El área táctil cubre toda la vista previa. Antes solo coincidía con
-        // el tamaño original del dibujo y era muy fácil no acertarle al item,
-        // especialmente después de reducirlo.
-        return Positioned.fill(
-          child: Listener(
+        return Listener(
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: (event) => _activePointers.add(event.pointer),
+          onPointerUp: (event) => _activePointers.remove(event.pointer),
+          onPointerCancel: (event) => _activePointers.remove(event.pointer),
+          onPointerMove: (event) {
+            if (_activePointers.length != 1) return;
+            final current = _pixelOffset ?? Offset(left, top);
+            final newLeft = current.dx + event.delta.dx;
+            final newTop = current.dy + event.delta.dy;
+            setState(() => _pixelOffset = Offset(newLeft, newTop));
+            reportTransform(newLeft, newTop);
+          },
+          child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onPointerDown: (event) => _activePointers.add(event.pointer),
-            onPointerUp: (event) => _activePointers.remove(event.pointer),
-            onPointerCancel: (event) => _activePointers.remove(event.pointer),
-            // Un dedo mueve el filtro de forma directa. Listener evita que el
-            // gesto de escala intercepte el arrastre en algunos dispositivos.
-            onPointerMove: (event) {
-              if (_activePointers.length != 1) return;
-              final current = _pixelOffset ?? Offset(left, top);
-              final newLeft = current.dx + event.delta.dx;
-              final newTop = current.dy + event.delta.dy;
-              setState(() => _pixelOffset = Offset(newLeft, newTop));
+            onScaleStart: (details) {
+              _dragStartFocalPoint = details.focalPoint;
+              _dragStartOffset = _pixelOffset ?? Offset(left, top);
+              _dragStartScale = _currentScale;
+            },
+            onScaleUpdate: (details) {
+              if (details.pointerCount < 2) return;
+              final delta = details.focalPoint - _dragStartFocalPoint;
+              final newLeft = _dragStartOffset.dx + delta.dx;
+              final newTop = _dragStartOffset.dy + delta.dy;
+              setState(() {
+                _pixelOffset = Offset(newLeft, newTop);
+                _currentScale =
+                    (_dragStartScale * details.scale).clamp(0.4, 3.0).toDouble();
+              });
               reportTransform(newLeft, newTop);
             },
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onScaleStart: (details) {
-                _dragStartFocalPoint = details.focalPoint;
-                _dragStartOffset = _pixelOffset ?? Offset(left, top);
-                _dragStartScale = _currentScale;
-              },
-              onScaleUpdate: (details) {
-                if (details.pointerCount < 2) return;
-                final delta = details.focalPoint - _dragStartFocalPoint;
-                final newLeft = _dragStartOffset.dx + delta.dx;
-                final newTop = _dragStartOffset.dy + delta.dy;
-                setState(() {
-                  _pixelOffset = Offset(newLeft, newTop);
-                  _currentScale =
-                      (_dragStartScale * details.scale).clamp(0.4, 3.0).toDouble();
-                });
-                reportTransform(newLeft, newTop);
-              },
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: left,
-                    top: top,
-                    child: IgnorePointer(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            width: 1.5,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              children: [
+                Positioned(
+                  left: left,
+                  top: top,
+                  child: IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          width: 1.5,
                         ),
-                        padding: const EdgeInsets.all(6),
-                        child: scaledContent,
+                        borderRadius: BorderRadius.circular(12),
                       ),
+                      padding: const EdgeInsets.all(6),
+                      child: scaledContent,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
       },
-    );
-  }
+    ),
+  );
+}
 
   double _filterHeight(PostFilterType type, double width) {
     switch (type) {

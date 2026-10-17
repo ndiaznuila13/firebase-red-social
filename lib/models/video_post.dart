@@ -35,6 +35,7 @@ class VideoPost {
 
   bool get isImage =>
       mediaType == 'image' ||
+      videoUrl.startsWith('data:image') ||
       videoUrl.toLowerCase().contains('.jpg') ||
       videoUrl.toLowerCase().contains('.jpeg') ||
       videoUrl.toLowerCase().contains('.png') ||
@@ -46,7 +47,11 @@ class VideoPost {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     final url = (data['mediaUrl'] ?? data['videoUrl']) as String? ?? '';
     final type = data['mediaType'] as String? ??
-        (url.contains('.jpg') || url.contains('.png') || url.contains('.jpeg')
+        (url.startsWith('data:image') ||
+                url.contains('.jpg') ||
+                url.contains('.png') ||
+                url.contains('.jpeg') ||
+                url.contains('.webp')
             ? 'image'
             : 'video');
 

@@ -191,15 +191,30 @@ class _VideoCardItemState extends State<VideoCardItem>
                             ),
                           )
                         else if (widget.post.isImage)
-                          widget.post.videoUrl.startsWith('data:image')
-                              ? Image.memory(
-                                  base64Decode(widget.post.videoUrl.split(',').last),
-                                  fit: BoxFit.contain,
-                                )
-                              : Image.network(
-                                  widget.post.videoUrl,
-                                  fit: BoxFit.contain,
-                                )
+                          Builder(
+                            builder: (context) {
+                              if (widget.post.videoUrl.startsWith('data:image')) {
+                                try {
+                                  final base64Part = widget.post.videoUrl.contains(',')
+                                      ? widget.post.videoUrl.substring(widget.post.videoUrl.indexOf(',') + 1)
+                                      : widget.post.videoUrl;
+                                  final cleanStr = base64Part.replaceAll(RegExp(r'\s+'), '');
+                                  return Image.memory(
+                                    base64Decode(cleanStr),
+                                    fit: BoxFit.contain,
+                                  );
+                                } catch (_) {
+                                  return const Center(
+                                    child: Icon(Icons.broken_image, color: Colors.white54, size: 48),
+                                  );
+                                }
+                              }
+                              return Image.network(
+                                widget.post.videoUrl,
+                                fit: BoxFit.contain,
+                              );
+                            },
+                          )
                         else
                           const Center(
                             child: Icon(Icons.videocam, color: Colors.white54, size: 48),
@@ -387,7 +402,7 @@ class _VideoCardItemState extends State<VideoCardItem>
             onTap: widget.post.isVideo ? _togglePlay : null,
             child: Container(
               color: Colors.black12,
-              constraints: const BoxConstraints(maxHeight: 420),
+              constraints: const BoxConstraints(minHeight: 240, maxHeight: 420),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -435,10 +450,51 @@ class _VideoCardItemState extends State<VideoCardItem>
                       ),
                   ] else ...[
                     if (widget.post.videoUrl.startsWith('data:image'))
-                      Image.memory(
-                        base64Decode(widget.post.videoUrl.split(',').last),
-                        fit: BoxFit.contain,
-                        width: double.infinity,
+                      Builder(
+                        builder: (context) {
+                          try {
+                            final base64Part = widget.post.videoUrl.contains(',')
+                                ? widget.post.videoUrl.substring(widget.post.videoUrl.indexOf(',') + 1)
+                                : widget.post.videoUrl;
+                            final cleanStr = base64Part.replaceAll(RegExp(r'\s+'), '');
+                            final bytes = base64Decode(cleanStr);
+                            return Image.memory(
+                              bytes,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                              gaplessPlayback: true,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  height: 240,
+                                  color: Colors.black12,
+                                  alignment: Alignment.center,
+                                  child: const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.broken_image_outlined, size: 48, color: Colors.grey),
+                                      SizedBox(height: 8),
+                                      Text('No se pudo cargar la imagen'),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          } catch (_) {
+                            return Container(
+                              height: 240,
+                              color: Colors.black12,
+                              alignment: Alignment.center,
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.broken_image_outlined, size: 48, color: Colors.grey),
+                                  SizedBox(height: 8),
+                                  Text('Error al decodificar imagen'),
+                                ],
+                              ),
+                            );
+                          }
+                        },
                       )
                     else
                       Image.network(
