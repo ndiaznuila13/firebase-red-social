@@ -1,10 +1,19 @@
-# TikTok App · Firebase (Auth, Firestore y Storage)
+# TokTik · Red Social en Flutter con Firebase & Filtros
 
-Aplicación móvil tipo TikTok desarrollada en Flutter y conectada a los servicios de Firebase:
-- **Firebase Authentication**: Registro e inicio de sesión seguro con correo y contraseña.
-- **Firebase Storage**: Almacenamiento y subida en la nube de archivos de video (MP4) con seguimiento de progreso en tiempo real.
-- **Cloud Firestore**: Base de datos NoSQL para metadatos de videos, feed cronológico y sistema atómico de "me gusta".
-- **Video Player**: Reproducción vertical estilo TikTok con auto-play en scroll, pausa al tocar y gestos de doble tap para dar like.
+Aplicación móvil tipo red social (estilo TikTok) desarrollada en Flutter, completamente integrada con Firebase y almacenamiento en la nube:
+
+- **Autenticación en tiempo real**: Registro e inicio de sesión seguro con correo y contraseña mediante Firebase Auth.
+- **Feed centralizado en la nube**: Sincronización instantánea de publicaciones con Cloud Firestore (`snapshots()`).
+- **Subida de Fotos y Videos**: 
+  - Captura desde cámara o selección desde galería.
+  - Compresión y renderizado optimizado de imágenes.
+  - Almacenamiento y streaming de video.
+- **Filtros Faciales e Interactivos**:
+  - Detección automática de rostros con Google ML Kit Face Detection.
+  - Filtros temáticos: Lentes de sol, bigote vintage, cono de cumpleaños, lentes de fiesta, sombrero cómico, corona real y orejas de gato.
+  - Posicionamiento manual táctil arrastrando con un dedo y control de escala interactivo.
+  - Edición de filtros en publicaciones existentes en el feed.
+- **Interacciones sociales**: Sistema de "Me gusta" con contador en tiempo real y animación de corazón con doble tap.
 
 ---
 
@@ -12,57 +21,57 @@ Aplicación móvil tipo TikTok desarrollada en Flutter y conectada a los servici
 
 ```text
 lib/
-├── firebase_options.dart         # Credenciales de conexión generadas con FlutterFire
-├── main.dart                     # Inicialización de Firebase, tema oscuro y AuthGate
+├── firebase_options.dart         # Credenciales de conexión a Firebase (listas para usar)
+├── main.dart                     # Inicialización de Firebase y AuthGate
 ├── models/
-│   └── video_post.dart           # Modelo de datos de cada video publicado
+│   ├── post_filter.dart          # Definición y opciones de filtros interactivos
+│   └── video_post.dart           # Modelo de datos de publicaciones (fotos/videos)
 ├── screens/
-│   ├── feed_screen.dart          # Feed vertical con PageView y autoplay
-│   ├── home_screen.dart          # Shell principal con barra de navegación estilo TikTok
-│   ├── login_screen.dart         # Pantalla de autenticación y validación
-│   ├── profile_screen.dart       # Perfil de usuario con métricas y videos propios
-│   └── upload_screen.dart        # Selección (cámara/galería), preview y subida
+│   ├── feed_screen.dart          # Feed vertical con PageView y tiempo real
+│   ├── home_screen.dart          # Navegación principal
+│   ├── login_screen.dart         # Login y registro de usuarios
+│   ├── profile_screen.dart       # Perfil con métricas y publicaciones propias
+│   └── upload_screen.dart        # Selección de medios, cámara, filtros y publicación
 ├── services/
-│   ├── auth_service.dart         # Wrapper de FirebaseAuth con manejo de errores
-│   └── video_repository.dart     # Gestión de Cloud Firestore y Firebase Storage
+│   ├── auth_service.dart         # Autenticación con FirebaseAuth
+│   ├── face_detector_service.dart# Detección facial con ML Kit
+│   ├── storage_service.dart      # Servicio de almacenamiento de fotos y videos
+│   └── video_repository.dart     # Consultas y mutaciones en Cloud Firestore
 └── widgets/
-    └── video_player_item.dart    # Controlador de video, overlays y acciones laterales
+    ├── media_filter_overlay.dart # Renderizado interactivo de filtros y gestos
+    └── video_player_item.dart    # Tarjeta de video/foto, controles y likes
 ```
 
 ---
 
-## Configuración con tu proyecto de Firebase
+## Conexión y Configuración
 
-Para vincular esta app con tu propio proyecto de Firebase en la consola ([console.firebase.google.com](https://console.firebase.google.com)):
-
-### 1. Servicios a habilitar en Firebase Console
-1. **Authentication**: En *Build → Authentication → Sign-in method*, habilita **Correo electrónico/Contraseña**.
-2. **Cloud Firestore**: En *Build → Firestore Database*, crea la base de datos y copia las reglas de [firestore.rules](file:///firestore.rules).
-3. **Firebase Storage**: En *Build → Storage*, activa el bucket de almacenamiento y copia las reglas de [storage.rules](file:///storage.rules).
-
-### 2. Generar o actualizar `lib/firebase_options.dart`
-Puedes configurar la app automáticamente ejecutando desde la terminal:
-
-```bash
-# 1. Iniciar sesión en Firebase (si no lo has hecho)
-npx firebase login
-
-# 2. Configurar FlutterFire para tu proyecto
-dart pub global run flutterfire_cli:flutterfire configure
-```
-
-Selecciona tu proyecto en la lista interactiva y las plataformas deseadas (`android`, `ios`, `web`). Esto generará automáticamente las claves reales en [lib/firebase_options.dart](file:///lib/firebase_options.dart).
-
-*(Alternativamente, puedes pegar directamente los valores de tu consola en [lib/firebase_options.dart](file:///lib/firebase_options.dart)).*
+El proyecto ya incluye la configuración de backend lista en `lib/firebase_options.dart` y `lib/services/storage_service.dart`. **No se requiere crear proyectos nuevos de Firebase ni configurar API keys adicionales.** Todos los miembros del equipo que ejecuten la app compartirán el mismo feed y la misma base de datos automáticamente.
 
 ---
 
-## Ejecución
+## Pasos para Ejecutar la App
+
+### 1. Requisitos
+- Flutter SDK instalado y configurado en el PATH (`flutter doctor`).
+- Un teléfono Android físico conectado por USB con la **Depuración por USB activada** (o un emulador Android abierto en Android Studio).
+
+### 2. Comandos en Terminal
 
 ```bash
-# Descargar dependencias
+# 1. Obtener dependencias
 flutter pub get
 
-# Ejecutar en tu dispositivo o emulador
+# 2. Verificar que el dispositivo esté detectado
+flutter devices
+
+# 3. Compilar y correr en el dispositivo
 flutter run
 ```
+
+*(Si tienes más de un dispositivo conectado, especifica el ID: `flutter run -d <DEVICE_ID>`)*.
+
+### 3. Primer uso
+1. En la pantalla inicial, pulsa en **"¿No tienes cuenta? Regístrate"**.
+2. Ingresa cualquier correo y contraseña deseada para crear tu usuario.
+3. Al entrar al feed verás las publicaciones compartidas del equipo y podrás subir fotos o videos desde el botón central `+`.
